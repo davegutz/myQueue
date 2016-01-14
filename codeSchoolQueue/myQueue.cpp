@@ -102,21 +102,11 @@
 	// Returns front_ value.
 	int Queue::front()
 	{
-		if(front_ == -1)
-		{
-			Serial.printf("Error: cannot return front_ index of empty queue\n");
-			return -1;
-		}
 		return front_;
 	}
 	// Returns front_ value.
 	int Queue::rear()
 	{
-		if(front_ == -1)
-		{
-			Serial.printf("Error: cannot return rear_ index of empty queue\n");
-			return -1;
-		}
 		return rear_;
 	}
 	// Returns front_ value.

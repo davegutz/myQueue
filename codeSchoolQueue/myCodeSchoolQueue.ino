@@ -4,7 +4,7 @@
 #include "myQueue.h"
 using namespace std;
 
-#define DISABLE_NVM
+//#define DISABLE_NVM
 
 #define FLT_MAX_SIZE_LOC 	1
 #define FLT_FRONT_LOC 		2
@@ -16,14 +16,14 @@ void setup()
 {
 	Serial.begin(9600);
 	size_t length = EEPROM.length();
-	Serial.printf("EElen=%d", length);
+	Serial.printf("EElen=%d\n", length);
 
 	// Load fault queue from eeprom to prom
-//	#ifndef DISABLE_NVM
-		int maxSize = EEPROM.read(FLT_MAX_SIZE_LOC);
-		int front 	= EEPROM.read(FLT_FRONT_LOC);
-		int rear  	= EEPROM.read(FLT_REAR_LOC);
-		#ifndef DISABLE_NVM
+	int maxSize = EEPROM.read(FLT_MAX_SIZE_LOC);
+	int front 	= EEPROM.read(FLT_FRONT_LOC);
+	int rear  	= EEPROM.read(FLT_REAR_LOC);
+	Serial.printf("nvm=%d,%d,%d", maxSize, front, rear);delay(4000);
+	#ifndef DISABLE_NVM
 		if ( maxSize==MAX_SIZE	&&					\
 			front<=MAX_SIZE 	&& front>=-1 &&		 \
 			rear<=MAX_SIZE  	&& rear>=-1 )
@@ -51,23 +51,23 @@ void setup()
 
 void loop()
 {
-   Q->Enqueue(2);  Q->Print();
-   Q->Enqueue(4);  Q->Print();
-   Q->Enqueue(6);  Q->Print();
-   Q->Dequeue();	 Q->Print();
-   Q->Enqueue(8);  Q->Print();
-	 Q->Dequeue();	 Q->Print();
-	 Q->Dequeue();	 Q->Print();
-	 Q->Dequeue();	 Q->Print();
-	 #ifndef DISABLE_NVM
-	 EEPROM.write(FLT_MAX_SIZE_LOC, Q->maxSize());
-	 EEPROM.write(FLT_FRONT_LOC, Q->front());
-	 EEPROM.write(FLT_REAR_LOC, Q->rear());
-	 for ( uint8_t i=0; i<MAX_SIZE; i++ )
+  Q->Enqueue(2);  Q->Print();
+  Q->Enqueue(4);  Q->Print();
+  Q->Enqueue(6);  Q->Print();
+  Q->Dequeue();	 Q->Print();
+  Q->Enqueue(8);  Q->Print();
+	Q->Dequeue();	 Q->Print();
+	Q->Dequeue();	 Q->Print();
+	Q->Dequeue();	 Q->Print();
+	#ifndef DISABLE_NVM
+	EEPROM.write(FLT_MAX_SIZE_LOC, Q->maxSize());
+	EEPROM.write(FLT_FRONT_LOC, Q->front());
+	EEPROM.write(FLT_REAR_LOC, Q->rear());
+	for ( uint8_t i=0; i<MAX_SIZE; i++ )
  	{
  		EEPROM.write(i+FLT_REAR_LOC, Q->getRaw(i));
  	}
 	#endif
 
-	 delay(2000);
+	delay(2000);
 }
