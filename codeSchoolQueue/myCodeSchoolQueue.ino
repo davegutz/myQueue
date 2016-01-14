@@ -3,21 +3,58 @@
 #include "application.h"
 #include "myQueue.h"
 using namespace std;
+Queue* Q;
+
+#define FLT_MAX_SIZE_LOC 	1
+#define FLT_FRONT_LOC 		2
+#define FLT_REAR_LOC			3
 
 void setup()
 {
 	Serial.begin(9600);
+	size_t length = EEPROM.length();
+	Serial.printf("EElen=%d", length);
+
+	// Load fault queue from eeprom to prom
+	int maxSize = EEPROM.read(FLT_MAX_SIZE_LOC);
+	int front 	= EEPROM.read(FLT_FRONT_LOC);
+	int rear  	= EEPROM.read(FLT_REAR_LOC);
+	if ( maxSize==MAX_SIZE	&&					\
+	front<=MAX_SIZE 	&& front>=-1 &&		 \
+	rear<=MAX_SIZE  	&& rear>=-1 )
+	{
+		Q = new Queue(front, rear, maxSize);
+		for ( uint8_t i=0; i<MAX_SIZE; i++ )
+		{
+			int val = EEPROM.read(i+FLT_REAR_LOC);
+			Q->loadRaw(i, val);
+		}
+	}
+	else
+	{
+		Q = new Queue();
+	}
+	Q->Print();
+
+	Serial.printf("setup ending\n");
+	delay(4000);
 }
+
+
 void loop()
 {
-	Queue Q; // creating an instance of Queue.
-	/*Driver Code to test the implementation
-	  Printing the elements in Queue after each Enqueue or Dequeue
-	*/
-   Q.Enqueue(2);  Q.Print();
-   Q.Enqueue(4);  Q.Print();
-   Q.Enqueue(6);  Q.Print();
-   Q.Dequeue();	  Q.Print();
-   Q.Enqueue(8);  Q.Print();
+   Q->Enqueue(2);  Q->Print();
+   Q->Enqueue(4);  Q->Print();
+   Q->Enqueue(6);  Q->Print();
+   Q->Dequeue();	 Q->Print();
+   Q->Enqueue(8);  Q->Print();
+	 EEPROM.write(FLT_MAX_SIZE_LOC, Q->maxSize());
+	 EEPROM.write(FLT_FRONT_LOC, Q->front());
+	 EEPROM.write(FLT_REAR_LOC, Q->rear());
+	 for ( uint8_t i=0; i<MAX_SIZE; i++ )
+ 	{
+ 		EEPROM.write(i+FLT_REAR_LOC, Q->getRaw(i));
+ 	}
+
 	 delay(2000);
 }
