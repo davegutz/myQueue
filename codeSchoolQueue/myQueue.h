@@ -1,7 +1,7 @@
 #ifndef _myQueue_h
 #define _myQueue_h
 
-#define MAX_SIZE 101  //maximum size of the array that will store Queue.
+#define MAX_SIZE 10  //maximum size of the array that will store Queue.
 
 class Queue
 {
@@ -14,6 +14,7 @@ public:
 	bool IsEmpty(void);
 	bool IsFull(void);
 	void Enqueue(int x);
+	void EnqueueOver(int x);
 	void Dequeue(void);
 	int  Front(void);
 	int  Rear(void);

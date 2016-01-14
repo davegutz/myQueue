@@ -11,8 +11,8 @@
 	}
 	Queue::Queue(int front, int rear, int maxSize)
 	{
-		front_ 		= -1;
-		rear_ 		= -1;
+		front_ 		= front;
+		rear_ 		= rear;
 		maxSize_ 	= maxSize;
 		A_ 				= new int[maxSize_];
 	}
@@ -59,6 +59,24 @@
 		{
 			Serial.printf("Error: Queue is Full\n");
 			return;
+		}
+		if (IsEmpty())
+		{
+			front_ = rear_ = 0;
+		}
+		else
+		{
+		    rear_ = (rear_+1)%maxSize_;
+		}
+		A_[rear_] = x;
+	}
+	// Inserts an element in queue at rear_ end.  Pops one off if full
+	void Queue::EnqueueOver(int x)
+	{
+		Serial.printf("Enqueuing %d\n", x);
+		if(IsFull())
+		{
+			Queue::Dequeue();
 		}
 		if (IsEmpty())
 		{
@@ -128,7 +146,7 @@
 	{
 		// Finding number of elements in queue
 		int count = (rear_+maxSize_-front_)%maxSize_ + 1;
-		Serial.printf("Queue       : ");
+		Serial.printf("Queue front, rear, maxSize: %d  %d  %d:", front_, rear_, maxSize_);
 		for(int i = 0; i <count; i++)
 		{
 			int index = (front_+i) % maxSize_; // Index of element while travesing circularly from front_

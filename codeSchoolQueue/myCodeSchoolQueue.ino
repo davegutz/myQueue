@@ -19,10 +19,10 @@ void setup()
 	Serial.printf("EElen=%d\n", length);
 
 	// Load fault queue from eeprom to prom
-	int maxSize = EEPROM.read(FLT_MAX_SIZE_LOC);
 	int front 	= EEPROM.read(FLT_FRONT_LOC);
 	int rear  	= EEPROM.read(FLT_REAR_LOC);
-	Serial.printf("nvm=%d,%d,%d", maxSize, front, rear);delay(4000);
+	int maxSize = EEPROM.read(FLT_MAX_SIZE_LOC);
+	Serial.printf("nvm front, rear, maxSize:  %d,%d,%d\n", front, rear, maxSize);  delay(4000);
 	#ifndef DISABLE_NVM
 		if ( maxSize==MAX_SIZE	&&					\
 			front<=MAX_SIZE 	&& front>=-1 &&		 \
@@ -31,16 +31,20 @@ void setup()
 				Q = new Queue(front, rear, maxSize);
 				for ( uint8_t i=0; i<MAX_SIZE; i++ )
 				{
-					int val = EEPROM.read(i+FLT_REAR_LOC);
+					int val = EEPROM.read(i+1+FLT_REAR_LOC);
+					Serial.printf("%d ", val);
 					Q->loadRaw(i, val);
 				}
+				Q->Print();
 			}
 		else
 		{
+			Serial.printf("from scratch...\n");
 			Q = new Queue();
 		}
 		Q->Print();
 	#else
+		Serial.printf("from scratch...\n");
 		Q = new Queue();
   #endif
 
@@ -51,21 +55,27 @@ void setup()
 
 void loop()
 {
-  Q->Enqueue(2);  Q->Print();
-  Q->Enqueue(4);  Q->Print();
-  Q->Enqueue(6);  Q->Print();
+  Q->EnqueueOver(2);  Q->Print();
+  Q->EnqueueOver(4);  Q->Print();
+  Q->EnqueueOver(6);  Q->Print();
   Q->Dequeue();	 Q->Print();
-  Q->Enqueue(8);  Q->Print();
+  Q->EnqueueOver(8);  Q->Print();
 	Q->Dequeue();	 Q->Print();
 	Q->Dequeue();	 Q->Print();
 	Q->Dequeue();	 Q->Print();
-	#ifndef DISABLE_NVM
-	EEPROM.write(FLT_MAX_SIZE_LOC, Q->maxSize());
+	Q->EnqueueOver(9);  Q->Print();
+	Q->EnqueueOver(10);  Q->Print();
+	Q->EnqueueOver(12);  Q->Print();
+	Q->EnqueueOver(13);  Q->Print();
+	Q->EnqueueOver(14);  Q->Print();
+	Q->EnqueueOver(15);  Q->Print();
+#ifndef DISABLE_NVM
 	EEPROM.write(FLT_FRONT_LOC, Q->front());
 	EEPROM.write(FLT_REAR_LOC, Q->rear());
+	EEPROM.write(FLT_MAX_SIZE_LOC, Q->maxSize());
 	for ( uint8_t i=0; i<MAX_SIZE; i++ )
  	{
- 		EEPROM.write(i+FLT_REAR_LOC, Q->getRaw(i));
+ 		EEPROM.write(i+1+FLT_REAR_LOC, Q->getRaw(i));
  	}
 	#endif
 
