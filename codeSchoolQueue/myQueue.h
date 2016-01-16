@@ -8,26 +8,60 @@ class FaultCode
 public:
 	unsigned long time;
 	unsigned long code;
+	bool 					reset;
 	FaultCode(void)
 	{
-		time = 0UL;
-		code = 0UL;
+		time 	= 0UL;
+		code 	= 0UL;
+		reset	= false;
 	}
-	FaultCode(unsigned long tim, unsigned long cod)
+	FaultCode(const unsigned long tim, const unsigned long cod, const bool res)
 	{
-		time = tim;
-		code = cod;
+		time 	= tim;
+		code 	= cod;
+		reset = res;
+	}
+	FaultCode(const unsigned long tim, const unsigned long cod)
+	{
+		time 	= tim;
+		code 	= cod;
+		reset = false;
 	}
 	FaultCode (const FaultCode & FC)
 	{
-		time = FC.time;
-		code = FC.code;
+		time 	= FC.time;
+		code 	= FC.code;
+		reset	= FC.reset;
 	}
-	FaultCode & operator=(const FaultCode & FC)
+	void operator=(const FaultCode & FC)
 	{
-		if ( this  == &FC ) return *this; // self-assignment
-		time = FC.time;
-		code = FC.code;
+//		if ( this  == &FC ) return *this; // self-assignment
+		time 	= FC.time;
+		code 	= FC.code;
+		reset = FC.reset;
+	}
+	bool operator==(const FaultCode &FC )
+	{
+		if ( time==FC.time && code==FC.code ) return true;
+		return false;
+	}
+	bool operator!=(const FaultCode &FC )
+	{
+		if ( time!=FC.time || code!=FC.code ) return true;
+		return false;
+	}
+	bool isEqualTo(const FaultCode & B)
+	{
+		if ( time == B.time && code == B.code ) return true;
+		return false;
+	}
+	bool isReset()
+	{
+		return reset;
+	}
+	void Print()
+	{
+		Serial.printf("| %d %d %d ", time, code, reset);
 	}
 	~FaultCode(){}
 };
@@ -54,6 +88,7 @@ public:
 	int  maxSize(void);
 	int  loadRaw(const uint8_t i, const FaultCode x);
 	FaultCode  getRaw(const uint8_t i);
+	int  resetAll(void);
 };
 
 #endif

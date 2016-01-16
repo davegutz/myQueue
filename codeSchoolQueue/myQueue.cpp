@@ -127,6 +127,17 @@
 		return front_;
 	}
 
+	// Returns element at front_ of queue.
+	FaultCode Queue::Rear()
+	{
+		if(rear_ == -1)
+		{
+			Serial.printf("Error: cannot return rear_ from empty queue\n");
+			return FaultCode(0UL, 0UL);
+		}
+		return A_[rear_];
+	}
+
 	// Returns front_ value.
 	int Queue::rear()
 	{
@@ -152,7 +163,19 @@
 		for(int i = 0; i <count; i++)
 		{
 			int index = (front_+i) % maxSize_; // Index of element while travesing circularly from front_
-			Serial.printf("%d ", A_[index].code);
+			Serial.printf("| %d %d ", A_[index].code, A_[index].reset);
 		}
 		Serial.printf("\n\n");
 	}
+
+// Reset all fault codes
+int Queue::resetAll()
+{
+	int count = (rear_+maxSize_-front_)%maxSize_ + 1;
+	for ( int i=0; i<count; i++ )
+	{
+		int index = (front_+i) % maxSize_; // Index of element while travesing circularly from front_
+		A_[index].reset = true;
+	}
+
+}
