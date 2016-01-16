@@ -3,21 +3,19 @@
 // class Queue
 // constructors
 	Queue::Queue()
+	: front_(-1), rear_(-1), maxSize_(MAX_SIZE)
 	{
-		front_ 		= -1;
-		rear_ 		= -1;
-		maxSize_ 	= MAX_SIZE;
-		A_ 				= new int[maxSize_];
+		A_ 				= new FaultCode[maxSize_];
+
 	}
-	Queue::Queue(int front, int rear, int maxSize)
+	Queue::Queue(const int front, const int rear, const int maxSize)
+	: front_(front), rear_(rear), maxSize_(maxSize)
 	{
-		front_ 		= front;
-		rear_ 		= rear;
-		maxSize_ 	= maxSize;
-		A_ 				= new int[maxSize_];
+		A_ 				= new FaultCode[maxSize_];
 	}
 
 // operators
+
 // functions
 	// To check wheter Queue is empty or not
 	bool Queue::IsEmpty()
@@ -30,8 +28,9 @@
 	{
 		return (rear_+1)%maxSize_ == front_ ? true : false;
 	}
+
 	// Load queue from memory
-	int Queue::loadRaw(uint8_t i, int x)
+	int Queue::loadRaw(const uint8_t i, const FaultCode x)
 	{
 		if ( i>= maxSize_ )
 		{
@@ -41,20 +40,22 @@
 		A_[i] = x;
 		return 0;
 	}
+
 	// Return queue to memory
-	int Queue::getRaw(uint8_t i)
+	FaultCode Queue::getRaw(const uint8_t i)
 	{
 		if ( i>= maxSize_ )
 		{
 			Serial.printf("Bad request %d\n", i);
-			return -1;
+			return FaultCode(0UL, 0UL);
 		}
 		return(A_[i]);
 	}
+
 	// Inserts an element in queue at rear_ end
-	void Queue::Enqueue(int x)
+	void Queue::Enqueue(const FaultCode x)
 	{
-		Serial.printf("Enqueuing %d\n", x);
+		Serial.printf("Enqueuing %d\n", x.code);
 		if(IsFull())
 		{
 			Serial.printf("Error: Queue is Full\n");
@@ -68,12 +69,13 @@
 		{
 		    rear_ = (rear_+1)%maxSize_;
 		}
-		A_[rear_] = x;
+		A_[rear_] = FaultCode(x);
 	}
+
 	// Inserts an element in queue at rear_ end.  Pops one off if full
-	void Queue::EnqueueOver(int x)
+	void Queue::EnqueueOver(const FaultCode x)
 	{
-		Serial.printf("Enqueuing %d\n", x);
+		Serial.printf("Enqueuing %d\n", x.code);
 		if(IsFull())
 		{
 			Queue::Dequeue();
@@ -107,26 +109,30 @@
 			front_ = (front_+1)%maxSize_;
 		}
 	}
+
 	// Returns element at front_ of queue.
-	int Queue::Front()
+	FaultCode Queue::Front()
 	{
 		if(front_ == -1)
 		{
 			Serial.printf("Error: cannot return front_ from empty queue\n");
-			return -1;
+			return FaultCode(0UL, 0UL);
 		}
 		return A_[front_];
 	}
+
 	// Returns front_ value.
 	int Queue::front()
 	{
 		return front_;
 	}
+
 	// Returns front_ value.
 	int Queue::rear()
 	{
 		return rear_;
 	}
+
 	// Returns front_ value.
 	int Queue::maxSize()
 	{
@@ -137,20 +143,16 @@
 		return maxSize_;
 	}
 
-	/*
-	   Printing the elements in queue from front_ to rear_.
-	   This function is only to test the code.
-	   This is not a standard function for Queue implementation.
-	*/
+	// Print
 	void Queue::Print()
 	{
-		// Finding number of elements in queue
+		//Finding number of elements in queue
 		int count = (rear_+maxSize_-front_)%maxSize_ + 1;
 		Serial.printf("Queue front, rear, maxSize: %d  %d  %d:", front_, rear_, maxSize_);
 		for(int i = 0; i <count; i++)
 		{
 			int index = (front_+i) % maxSize_; // Index of element while travesing circularly from front_
-			Serial.printf("%d ", A_[index]);
+			Serial.printf("%d ", A_[index].code);
 		}
 		Serial.printf("\n\n");
 	}

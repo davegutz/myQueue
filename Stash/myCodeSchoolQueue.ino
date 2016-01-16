@@ -6,12 +6,13 @@
 using namespace std;
 
 //#define DISABLE_NVM
-//#define REFRESH_NVM
+#define REFRESH_NVM
 
 #define FLT_MAX_SIZE_LOC 	1
 #define FLT_FRONT_LOC 		2
 #define FLT_REAR_LOC			3
 
+// Global variables
 Queue* Q;
 unsigned long currentTime;
 SparkTime           rtc;                    // Time value
@@ -27,8 +28,8 @@ void setup()
 	int front 	= EEPROM.read(FLT_FRONT_LOC);
 	int rear  	= EEPROM.read(FLT_REAR_LOC);
 	int maxSize = EEPROM.read(FLT_MAX_SIZE_LOC);
-	Serial.printf("nvm front, rear, maxSize:  %d,%d,%d\n", front, rear, maxSize);  delay(2000);
-  #ifndef REFRESH_NVM
+	Serial.printf("nvm front, rear, maxSize:  %d,%d,%d\n", front, rear, maxSize);  delay(4000);
+	#ifndef REFRESH_NVM
 	#ifndef DISABLE_NVM
 		if ( maxSize==MAX_SIZE	&&					\
 			front<=MAX_SIZE 	&& front>=-1 &&		 \
@@ -37,9 +38,8 @@ void setup()
 				Q = new Queue(front, rear, maxSize);
 				for ( uint8_t i=0; i<MAX_SIZE; i++ )
 				{
-					FaultCode val;
-					EEPROM.get(i+1+FLT_REAR_LOC, val);
-					Serial.printf("%d %d\n", val.time, val.code);
+					int val = EEPROM.read(i+1+FLT_REAR_LOC);
+					Serial.printf("%d ", val);
 					Q->loadRaw(i, val);
 				}
 				Q->Print();
@@ -63,8 +63,8 @@ void setup()
 	Serial.printf("setup ending\n");
 
 	// Time schedule convert and check
-	rtc.begin(&UDPClient, "pool.ntp.org");  // Workaround - see particle.io
-	rtc.setTimeZone(-5); // gmt offset
+  rtc.begin(&UDPClient, "pool.ntp.org");  // Workaround - see particle.io
+  rtc.setTimeZone(-5); // gmt offset
 
 	delay(4000);
 }
@@ -72,27 +72,31 @@ void setup()
 
 void loop()
 {
-	Q->EnqueueOver(FaultCode(rtc.now(), 2002));  Q->Print();
-  Q->EnqueueOver(FaultCode(rtc.now(), 2004));  Q->Print();
-  Q->EnqueueOver(FaultCode(rtc.now(), 2006));  Q->Print();
+//  Q->EnqueueOver(rtc.now(), 2002);  Q->Print();
+	unsigned long currentTime = rtc.now();
+  Q->EnqueueOver(currentTime, 2002);  Q->Print();
+/*
+  Q->EnqueueOver(4);  Q->Print();
+  Q->EnqueueOver(6);  Q->Print();
   Q->Dequeue();	 Q->Print();
-  Q->EnqueueOver(FaultCode(rtc.now(), 2008));  Q->Print();
+  Q->EnqueueOver(8);  Q->Print();
 	Q->Dequeue();	 Q->Print();
 	Q->Dequeue();	 Q->Print();
 	Q->Dequeue();	 Q->Print();
-	Q->EnqueueOver(FaultCode(rtc.now(), 2009));  Q->Print();
-	Q->EnqueueOver(FaultCode(rtc.now(), 2010));  Q->Print();
-	Q->EnqueueOver(FaultCode(rtc.now(), 2011));  Q->Print();
+	Q->EnqueueOver(9);  Q->Print();
+	Q->EnqueueOver(10);  Q->Print();
+	Q->EnqueueOver(12);  Q->Print();
+	Q->EnqueueOver(13);  Q->Print();
+	Q->EnqueueOver(14);  Q->Print();
+	Q->EnqueueOver(15);  Q->Print();
+	*/
 	#ifndef DISABLE_NVM
 	EEPROM.write(FLT_FRONT_LOC, Q->front());
 	EEPROM.write(FLT_REAR_LOC, Q->rear());
 	EEPROM.write(FLT_MAX_SIZE_LOC, Q->maxSize());
 	for ( uint8_t i=0; i<MAX_SIZE; i++ )
  	{
-		FaultCode val = Q->getRaw(i);
-  	Serial.printf("%d %d\n", val.time, val.code);
-
- 		EEPROM.put(i+1+FLT_REAR_LOC, val);
+ 		EEPROM.write(i+1+FLT_REAR_LOC, Q->getRaw(i));
  	}
 	#endif
 
