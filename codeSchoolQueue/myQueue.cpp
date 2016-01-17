@@ -1,5 +1,7 @@
 #include "application.h"
 #include "myQueue.h"
+extern int verbose;
+
 // class Queue
 // constructors
 	Queue::Queue()
@@ -55,7 +57,7 @@
 	// Inserts an element in queue at rear_ end
 	void Queue::Enqueue(const FaultCode x)
 	{
-		Serial.printf("Enqueuing %d\n", x.code);
+		if ( verbose > 4 ) Serial.printf("Enqueuing %d\n", x.code);
 		if(IsFull())
 		{
 			Serial.printf("Error: Queue is Full\n");
@@ -75,7 +77,7 @@
 	// Inserts an element in queue at rear_ end.  Pops one off if full
 	void Queue::EnqueueOver(const FaultCode x)
 	{
-		Serial.printf("Enqueuing %d\n", x.code);
+		if ( verbose > 4 ) Serial.printf("Enqueuing %d\n", x.code);
 		if(IsFull())
 		{
 			Queue::Dequeue();
@@ -94,7 +96,7 @@
 	// Removes an element in Queue from front_ end.
 	void Queue::Dequeue()
 	{
-		Serial.printf("Dequeuing \n");
+		if ( verbose > 4 ) Serial.printf("Dequeuing \n");
 		if(IsEmpty())
 		{
 			Serial.printf("Error: Queue is Empty\n");
@@ -159,7 +161,7 @@
 	{
 		//Finding number of elements in queue
 		int count = (rear_+maxSize_-front_)%maxSize_ + 1;
-		Serial.printf("Queue front, rear, maxSize: %d  %d  %d:", front_, rear_, maxSize_);
+		if ( verbose > 4 ) Serial.printf("Queue front, rear, maxSize: %d  %d  %d:", front_, rear_, maxSize_);
 		for(int i = 0; i <count; i++)
 		{
 			int index = (front_+i) % maxSize_; // Index of element while travesing circularly from front_

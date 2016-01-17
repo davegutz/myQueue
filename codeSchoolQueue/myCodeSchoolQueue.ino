@@ -14,21 +14,19 @@ using namespace std;
 #define READ_DELAY 				10000UL 		// 1 min code reading period
 #define RESET_DELAY 			50000UL 		// 5 min reset period
 Queue* Q;
-
-
-
+extern const int verbose = 1;
 
 // Load fault queue from eeprom to prom
-void loadNVM(void)
+void loadNVM(const bool reset)
 {
-
 int front 	= EEPROM.read(FLT_FRONT_LOC);
 int rear  	= EEPROM.read(FLT_REAR_LOC*sizeof(unsigned long));
 int maxSize = EEPROM.read(FLT_MAX_SIZE_LOC*sizeof(unsigned long));
-Serial.printf("NVM front, rear, maxSize:  %d,%d,%d\n", front, rear, maxSize);  delay(2000);
-#ifndef REFRESH_NVM
-#ifndef DISABLE_NVM
-	if ( maxSize==MAX_SIZE	&&					\
+if ( verbose > 4 ) Serial.printf("NVM front, rear, maxSize:  %d,%d,%d\n", front, rear, maxSize);  delay(2000);
+if ( !reset )
+{
+	#ifndef DISABLE_NVM
+		if ( maxSize==MAX_SIZE	&&					\
 		front<=MAX_SIZE 	&& front>=-1 &&		 \
 		rear<=MAX_SIZE  	&& rear>=-1 )
 		{
@@ -38,24 +36,26 @@ Serial.printf("NVM front, rear, maxSize:  %d,%d,%d\n", front, rear, maxSize);  d
 				unsigned long tim;
 				FaultCode fc;
 				EEPROM.get((i+1+FLT_MAX_SIZE_LOC)*sizeof(FaultCode), fc);
-				Serial.printf("%d %d %d\n", fc.time, fc.code, fc.reset);
+				if ( verbose > 4 ) Serial.printf("%d %d %d\n", fc.time, fc.code, fc.reset);
 				Q->loadRaw(i, fc);
 			}
 		}
+		else
+		{
+			Serial.printf("from scratch...\n");
+			Q = new Queue();
+		}
+	#else
+		Serial.printf("from scratch...\n");
+		Q = new Queue();
+	#endif
+	}
 	else
 	{
 		Serial.printf("from scratch...\n");
+		delay(1000);
 		Q = new Queue();
 	}
-#else
-	Serial.printf("from scratch...\n");
-	Q = new Queue();
-#endif
-#else
-	Serial.printf("from scratch...\n");
-	delay(1000);
-	Q = new Queue();
-#endif
 }
 
 
@@ -65,8 +65,11 @@ void newCode(const unsigned long tim, const unsigned long cod)
 	FaultCode newOne 	= FaultCode(tim, cod, false); // false, by definition new
 	FaultCode front 	= Q->Front();
 	FaultCode rear 		= Q->Rear();
-	Serial.printf("Front is ");  front.Print(); Serial.printf("\n");
-	Serial.printf("Rear  is ");  rear.Print();  Serial.printf("\n");
+	if ( verbose > 4 )
+	{
+		Serial.printf("Front is ");  front.Print(); Serial.printf("\n");
+		Serial.printf("Rear  is ");  rear.Print();  Serial.printf("\n");
+	}
 	// Queue inserts at rear (FIFO)
   //	if ( rear.isReset || !(newOne.time==rear.time && newOne.code==rear.code) )
 	if ( rear.isReset() || (newOne.time!=rear.time || newOne.code!=rear.code) )
@@ -87,7 +90,7 @@ void newCode(const unsigned long tim, const unsigned long cod)
 void setup()
 {
 	Serial.begin(9600);
-	loadNVM();
+	loadNVM(true);
 	Q->Print();
 	Serial.printf("setup ending\n");
 	delay(4000);
@@ -130,7 +133,7 @@ void loop()
 		for ( uint8_t i=0; i<MAX_SIZE; i++ )
  		{
 			FaultCode val = Q->getRaw(i);
-  		Serial.printf("%d %d %d\n", val.time, val.code, val.reset);
+  		if ( verbose > 4 ) Serial.printf("%d %d %d\n", val.time, val.code, val.reset);
 			EEPROM.put((i+1+FLT_MAX_SIZE_LOC)*sizeof(FaultCode), val);
  		}
 		#endif
