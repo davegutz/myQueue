@@ -66,7 +66,7 @@ public:
 	~FaultCode(){}
 };
 
-
+// FIFO Queue class
 class Queue
 {
 private:

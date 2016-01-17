@@ -163,7 +163,7 @@
 		for(int i = 0; i <count; i++)
 		{
 			int index = (front_+i) % maxSize_; // Index of element while travesing circularly from front_
-			Serial.printf("| %d %d ", A_[index].code, A_[index].reset);
+			Serial.printf("| %d %d %d ", A_[index].time, A_[index].code, A_[index].reset);
 		}
 		Serial.printf("\n\n");
 	}
@@ -177,5 +177,4 @@ int Queue::resetAll()
 		int index = (front_+i) % maxSize_; // Index of element while travesing circularly from front_
 		A_[index].reset = true;
 	}
-
 }
