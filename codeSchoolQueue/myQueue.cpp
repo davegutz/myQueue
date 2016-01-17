@@ -57,7 +57,7 @@ extern int verbose;
 	// Inserts an element in queue at rear_ end
 	void Queue::Enqueue(const FaultCode x)
 	{
-		if ( verbose > 4 ) Serial.printf("Enqueuing %d\n", x.code);
+		Serial.printf("Enqueuing %d\n", x.code);
 		if(IsFull())
 		{
 			Serial.printf("Error: Queue is Full\n");
@@ -167,7 +167,7 @@ extern int verbose;
 			int index = (front_+i) % maxSize_; // Index of element while travesing circularly from front_
 			Serial.printf("| %d %d %d ", A_[index].time, A_[index].code, A_[index].reset);
 		}
-		Serial.printf("\n\n");
+		Serial.printf("\n");
 	}
 
 // Reset all fault codes
