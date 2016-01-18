@@ -19,7 +19,10 @@ void setup()
 {
 	Serial.printf("\nSetup ...\n");
 	Serial.begin(9600);
-	F = loadNVM(faultNVM, REFRESH_NVM, I);
+	F = loadCodeNVM(faultNVM, REFRESH_NVM);
+	impendNVM = faultNVM + 3*sizeof(int) + MAX_SIZE*sizeof(FaultCode);
+	if ( verbose > 4 ) Serial.printf("impendNVM=%d\n", impendNVM);
+	I = loadImpendNVM(impendNVM, REFRESH_NVM);
 	F->Print();
 	I->Print();
 	Serial.printf("setup ending\n");
@@ -62,8 +65,9 @@ void loop()
 		newImpend(faultNow, 2020UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
 		newCode(faultNow, 2011UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
 		newImpend(faultNow, 2021UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
-		impendNVM = storeNVM(faultNVM);
+		impendNVM = storeCodeNVM(faultNVM);
 		if ( verbose > 4 ) Serial.printf("impendNVM=%d\n", impendNVM);
+		storeImpendNVM(impendNVM);
 	}
 	if ( resetting )
 	{

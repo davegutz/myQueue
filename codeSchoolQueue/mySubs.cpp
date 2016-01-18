@@ -61,7 +61,7 @@ void newImpend(const unsigned long tim, const unsigned long cod)
 
 
 // Load fault queue from eeprom to prom
-Queue* loadNVM(const int start, const bool reset, Queue* II)
+Queue* loadCodeNVM(const int start, const bool reset)
 {
 	int p = start;
 	int front 	= EEPROM.read(p); p += sizeof(int);
@@ -96,13 +96,50 @@ Queue* loadNVM(const int start, const bool reset, Queue* II)
 		delay(1000);
 		F = new Queue();
 	}
-	I = new Queue();
-	II = I;
 	return F;
 }
 
+// Load impending queue from eeprom to prom
+Queue* loadImpendNVM(const int start, const bool reset)
+{
+	int p = start;
+	int front 	= EEPROM.read(p); p += sizeof(int);
+	int rear  	= EEPROM.read(p); p += sizeof(int);
+	int maxSize = EEPROM.read(p); p += sizeof(int);
+	if ( verbose > 4 ) Serial.printf("NVM front, rear, maxSize:  %d,%d,%d\n", front, rear, maxSize);  delay(2000);
+	if ( !reset )
+	{
+		if ( maxSize==MAX_SIZE	&&					\
+		front<=MAX_SIZE 	&& front>=-1 &&		 \
+		rear<=MAX_SIZE  	&& rear>=-1 )
+		{
+			I = new Queue(front, rear, maxSize);
+			for ( uint8_t i=0; i<MAX_SIZE; i++ )
+			{
+				unsigned long tim;
+				FaultCode fc;
+				EEPROM.get(p, fc); p += sizeof(FaultCode);
+				if ( verbose > 4 ) Serial.printf("%d %d %d\n", fc.time, fc.code, fc.reset);
+				I->loadRaw(i, fc);
+			}
+		}
+		else
+		{
+			Serial.printf("NVM test failed.   From scratch...\n");
+			I = new Queue();
+		}
+	}
+	else
+	{
+		Serial.printf("reset.   From scratch...\n");
+		delay(1000);
+		I = new Queue();
+	}
+	return I;
+}
 
-int storeNVM(const int start)
+
+int storeCodeNVM(const int start)
 {
 	int p = start;
 	EEPROM.write(p, F->front()); 		p += sizeof(int);
@@ -111,6 +148,21 @@ int storeNVM(const int start)
 	for ( uint8_t i=0; i<MAX_SIZE; i++ )
 	{
 		FaultCode val = F->getRaw(i);
+		if ( verbose > 4 ) Serial.printf("%d %d %d\n", val.time, val.code, val.reset);
+		EEPROM.put(p, val); p += sizeof(FaultCode);
+	}
+	return p;
+}
+
+int storeImpendNVM(const int start)
+{
+	int p = start;
+	EEPROM.write(p, I->front()); 		p += sizeof(int);
+	EEPROM.write(p, I->rear() );		p += sizeof(int);
+	EEPROM.write(p, I->maxSize());	p += sizeof(int);
+	for ( uint8_t i=0; i<MAX_SIZE; i++ )
+	{
+		FaultCode val = I->getRaw(i);
 		if ( verbose > 4 ) Serial.printf("%d %d %d\n", val.time, val.code, val.reset);
 		EEPROM.put(p, val); p += sizeof(FaultCode);
 	}

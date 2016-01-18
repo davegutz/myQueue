@@ -4,5 +4,7 @@
 
 void newCode(const unsigned long tim, const unsigned long cod);
 void newImpend(const unsigned long tim, const unsigned long cod);
-Queue* loadNVM(const int start, const bool reset, Queue* II);
-int storeNVM(const int start);
+Queue* loadCodeNVM(const int start, const bool reset);
+Queue* loadImpendNVM(const int start, const bool reset);
+int storeCodeNVM(const int start);
+int storeImpendNVM(const int start);
