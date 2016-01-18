@@ -43,6 +43,35 @@ extern int verbose;
 		return 0;
 	}
 
+// Load fault queue from eeprom to prom
+int Queue::loadNVM(const int start)
+{
+	int p = start;
+	int front 	= EEPROM.read(p); p += sizeof(int);
+	int rear  	= EEPROM.read(p); p += sizeof(int);
+	int maxSize = EEPROM.read(p); p += sizeof(int);
+	if ( verbose > 4 ) Serial.printf("Queue::loadNVM:  front, rear, maxSize:  %d,%d,%d\n", front, rear, maxSize);  delay(2000);
+	if ( maxSize==MAX_SIZE	&&					\
+	front<=MAX_SIZE 	&& front>=-1 &&		 \
+	rear<=MAX_SIZE  	&& rear>=-1 )
+	{
+		for ( uint8_t i=0; i<MAX_SIZE; i++ )
+		{
+			unsigned long tim;
+			FaultCode fc;
+			EEPROM.get(p, fc); p += sizeof(FaultCode);
+			if ( verbose > 4 ) Serial.printf("%d %d %d\n", fc.time, fc.code, fc.reset);
+			loadRaw(i, fc);
+		}
+	}
+	else
+	{
+		Serial.printf("NVM test failed.\n");
+	}
+	return p;
+}
+
+
 	// Return queue to memory
 	FaultCode Queue::getRaw(const uint8_t i)
 	{
@@ -155,6 +184,52 @@ extern int verbose;
 		}
 		return maxSize_;
 	}
+
+
+// Add a fault
+void Queue::newCode(const unsigned long tim, const unsigned long cod)
+{
+	FaultCode newOne 	= FaultCode(tim, cod, false); // false, by definition new
+	FaultCode front 	= Front();
+	FaultCode rear 		= Rear();
+	if ( verbose > 4 )
+	{
+		Serial.printf("Front is ");  front.Print(); Serial.printf("\n");
+		Serial.printf("Rear  is ");  rear.Print();  Serial.printf("\n");
+	}
+	// Queue inserts at rear (FIFO)
+	if ( rear.isReset() || (newOne.time!=rear.time || newOne.code!=rear.code) )
+	{
+		EnqueueOver(newOne);
+		if ( verbose > 4 ) Serial.printf("newCode:      ");
+		Print();
+	}
+	else
+	{
+		Serial.printf("newCode already logged:  ");
+		newOne.Print();
+		Serial.printf("\n");
+	}
+}
+
+
+// Store in NVM
+int Queue::storeNVM(const int start)
+{
+	int p = start;
+	EEPROM.write(p, front_); 		p += sizeof(int);
+	EEPROM.write(p, rear_ );		p += sizeof(int);
+	EEPROM.write(p, maxSize_);	p += sizeof(int);
+	for ( uint8_t i=0; i<MAX_SIZE; i++ )
+	{
+		FaultCode val = getRaw(i);
+		if ( verbose > 4 ) Serial.printf("%d %d %d\n", val.time, val.code, val.reset);
+		EEPROM.put(p, val); p += sizeof(FaultCode);
+	}
+	return p;
+}
+
+
 
 	// Print
 	void Queue::Print()

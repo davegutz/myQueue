@@ -7,7 +7,7 @@ SYSTEM_THREAD(ENABLED);        // Make sure heat system code always run regardle
 #define READ_DELAY 				10000UL 		// 10 sec code reading period
 #define RESET_DELAY 			50000UL 		// 50 sec reset period
 using namespace std;
-extern const int verbose = 5;
+extern int verbose = 5;
 static Queue* F;
 static Queue* I;
 const int faultNVM 			= 1; 					// NVM location
@@ -17,12 +17,15 @@ int impendNVM;  											// NVM locations, calculated
 
 void setup()
 {
-	Serial.printf("\nSetup ...\n");
+	Serial.printf("\n\n\nSetup ...\n");
 	Serial.begin(9600);
-	F = loadCodeNVM(faultNVM, REFRESH_NVM);
-	impendNVM = faultNVM + 3*sizeof(int) + MAX_SIZE*sizeof(FaultCode);
-	if ( verbose > 4 ) Serial.printf("impendNVM=%d\n", impendNVM);
-	I = loadImpendNVM(impendNVM, REFRESH_NVM);
+	F = new Queue();
+	I = new Queue();
+	if ( !REFRESH_NVM )
+	{
+		impendNVM = F->loadNVM(faultNVM);
+		I->loadNVM(impendNVM);
+	}
 	F->Print();
 	I->Print();
 	Serial.printf("setup ending\n");
@@ -46,33 +49,35 @@ void loop()
 	resetting = ((now-lastReset) >= RESET_DELAY);
   if ( resetting ) lastReset  = now;
 
-	newCode(faultNow, 2002UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
-	newImpend(faultNow, 2012UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
+	F->newCode(faultNow, 2002UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+	I->newCode(faultNow, 2012UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
 	if ( reading )
 	{
-		newCode(faultNow, 2004UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
-		newImpend(faultNow, 2014UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
-		newCode(faultNow, 2006UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
-		newImpend(faultNow, 2016UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
-		newCode(faultNow, 2008UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
-		newImpend(faultNow, 2018UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
+		F->newCode(faultNow, 2004UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		I->newCode(faultNow, 2014UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
+		F->newCode(faultNow, 2006UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		I->newCode(faultNow, 2016UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
+		F->newCode(faultNow, 2008UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		I->newCode(faultNow, 2018UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
 		F->Dequeue();	 if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
 		F->Dequeue();	 if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
 		F->Dequeue();	 if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
-		newCode(faultNow, 2009UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
-		newImpend(faultNow, 2019UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
-		newCode(faultNow, 2010UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
-		newImpend(faultNow, 2020UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
-		newCode(faultNow, 2011UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
-		newImpend(faultNow, 2021UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
-		impendNVM = storeCodeNVM(faultNVM);
-		if ( verbose > 4 ) Serial.printf("impendNVM=%d\n", impendNVM);
-		storeImpendNVM(impendNVM);
+		F->newCode(faultNow, 2009UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		I->newCode(faultNow, 2019UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
+		F->newCode(faultNow, 2010UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		I->newCode(faultNow, 2020UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
+		F->newCode(faultNow, 2011UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		I->newCode(faultNow, 2021UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
+		//
+		impendNVM = F->storeNVM(faultNVM);
+		I->storeNVM(impendNVM);
 	}
+
 	if ( resetting )
 	{
 		F->resetAll();
 		I->resetAll();
 	}
+
 	delay(2000);
 }

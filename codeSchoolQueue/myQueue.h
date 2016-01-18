@@ -1,7 +1,7 @@
 #ifndef _myQueue_h
 #define _myQueue_h
 
-#define MAX_SIZE 10  //maximum size of the array that will store Queue.
+#define MAX_SIZE 50  //maximum size of the array that will store Queue.
 
 class FaultCode
 {
@@ -86,9 +86,12 @@ public:
 	int  front(void);
 	int  rear(void);
 	int  maxSize(void);
+	int  loadNVM(const int start);
 	int  loadRaw(const uint8_t i, const FaultCode x);
 	FaultCode  getRaw(const uint8_t i);
+	void newCode(const unsigned long tim, const unsigned long cod);
 	int  resetAll(void);
+	int  storeNVM(const int start);
 };
 
 #endif
