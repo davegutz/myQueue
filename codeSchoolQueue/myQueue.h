@@ -1,8 +1,6 @@
 #ifndef _myQueue_h
 #define _myQueue_h
 
-#define MAX_SIZE 30  //maximum size of the array that will store Queue.
-
 class FaultCode
 {
 public:
@@ -70,11 +68,11 @@ public:
 class Queue
 {
 private:
-	int front_, rear_, maxSize_;
+	int front_, rear_, maxSize_, gmt_;
 	FaultCode *A_;
 public:
-	Queue(void);
-	Queue(const int front, const int rear, const int maxSize);
+	Queue(const int maxSize, const int GMT);
+	Queue(const int front, const int rear, const int maxSize, const int GMT);
 	bool IsEmpty(void);
 	bool IsFull(void);
 	void Enqueue(const FaultCode x);
@@ -84,6 +82,7 @@ public:
 	FaultCode  Rear(void);
 	void Print(void);
 	int  front(void);
+	int  printActive(void);
 	int  rear(void);
 	int  maxSize(void);
 	int  loadNVM(const int start);
