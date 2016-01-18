@@ -4,25 +4,27 @@
 SYSTEM_THREAD(ENABLED);        // Make sure heat system code always run regardless of network status
 #include "myQueue.h"
 #include "mySubs.h"
-#define READ_DELAY 				10000UL 		// 1 min code reading period
-#define RESET_DELAY 			50000UL 		// 5 min reset period
+#define READ_DELAY 				10000UL 		// 10 sec code reading period
+#define RESET_DELAY 			50000UL 		// 50 sec reset period
 using namespace std;
-extern const int verbose = 1;
-static Queue* Q;
-
-//#define DISABLE_NVM
-//#define REFRESH_NVM
+extern const int verbose = 5;
+static Queue* F;
+static Queue* I;
+const int faultNVM 			= 1; 					// NVM location
+int impendNVM;  											// NVM locations, calculated
+#define REFRESH_NVM   false						// Command to reset NVM on fresh load
 
 
 void setup()
 {
+	Serial.printf("\nSetup ...\n");
 	Serial.begin(9600);
-	loadNVM(true);
-	Q->Print();
+	F = loadNVM(faultNVM, REFRESH_NVM, I);
+	F->Print();
+	I->Print();
 	Serial.printf("setup ending\n");
 	delay(4000);
 }
-
 
 
 void loop()
@@ -41,33 +43,32 @@ void loop()
 	resetting = ((now-lastReset) >= RESET_DELAY);
   if ( resetting ) lastReset  = now;
 
-	newCode(faultNow, 2002UL); Q->Print();
+	newCode(faultNow, 2002UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+	newImpend(faultNow, 2012UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
 	if ( reading )
 	{
-		newCode(faultNow, 2004UL); Q->Print();
-		newCode(faultNow, 2006UL); Q->Print();
-		newCode(faultNow, 2008UL); Q->Print();
-		Q->Dequeue();	 Q->Print();
-		Q->Dequeue();	 Q->Print();
-		Q->Dequeue();	 Q->Print();
-		newCode(faultNow, 2009UL); Q->Print();
-		newCode(faultNow, 2010UL); Q->Print();
-		newCode(faultNow, 2011UL); Q->Print();
-		#ifndef DISABLE_NVM
-		EEPROM.write(FLT_FRONT_LOC, Q->front());
-		EEPROM.write(FLT_REAR_LOC*sizeof(unsigned long), Q->rear());
-		EEPROM.write(FLT_MAX_SIZE_LOC*sizeof(unsigned long), Q->maxSize());
-		for ( uint8_t i=0; i<MAX_SIZE; i++ )
- 		{
-			FaultCode val = Q->getRaw(i);
-  		if ( verbose > 4 ) Serial.printf("%d %d %d\n", val.time, val.code, val.reset);
-			EEPROM.put((i+1+FLT_MAX_SIZE_LOC)*sizeof(FaultCode), val);
- 		}
-		#endif
+		newCode(faultNow, 2004UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		newImpend(faultNow, 2014UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
+		newCode(faultNow, 2006UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		newImpend(faultNow, 2016UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
+		newCode(faultNow, 2008UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		newImpend(faultNow, 2018UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
+		F->Dequeue();	 if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		F->Dequeue();	 if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		F->Dequeue();	 if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		newCode(faultNow, 2009UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		newImpend(faultNow, 2019UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
+		newCode(faultNow, 2010UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		newImpend(faultNow, 2020UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
+		newCode(faultNow, 2011UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); F->Print();
+		newImpend(faultNow, 2021UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
+		impendNVM = storeNVM(faultNVM);
+		if ( verbose > 4 ) Serial.printf("impendNVM=%d\n", impendNVM);
 	}
 	if ( resetting )
 	{
-		Q->resetAll();
+		F->resetAll();
+		I->resetAll();
 	}
 	delay(2000);
 }

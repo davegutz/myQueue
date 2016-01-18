@@ -3,4 +3,6 @@
 #define FLT_MAX_SIZE_LOC 	3
 
 void newCode(const unsigned long tim, const unsigned long cod);
-void loadNVM(const bool reset);
+void newImpend(const unsigned long tim, const unsigned long cod);
+Queue* loadNVM(const int start, const bool reset, Queue* II);
+int storeNVM(const int start);
