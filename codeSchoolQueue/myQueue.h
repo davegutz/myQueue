@@ -1,7 +1,7 @@
 #ifndef _myQueue_h
 #define _myQueue_h
 
-#define MAX_SIZE 50  //maximum size of the array that will store Queue.
+#define MAX_SIZE 30  //maximum size of the array that will store Queue.
 
 class FaultCode
 {

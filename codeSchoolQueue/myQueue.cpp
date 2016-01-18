@@ -226,6 +226,21 @@ int Queue::storeNVM(const int start)
 		if ( verbose > 4 ) Serial.printf("%d %d %d\n", val.time, val.code, val.reset);
 		EEPROM.put(p, val); p += sizeof(FaultCode);
 	}
+	// verify
+	int test;
+	FaultCode tc, raw;
+	p = start;
+	test = EEPROM.read(p); if ( test!=front_   ) return -1; p += sizeof(int);
+	test = EEPROM.read(p); if ( test!=rear_    ) return -1; p += sizeof(int);
+	test = EEPROM.read(p); if ( test!=maxSize_ ) return -1; p += sizeof(int);
+	for ( uint8_t i=0; i<MAX_SIZE; i++ )
+	{
+		FaultCode raw = getRaw(i);
+		EEPROM.get(p, tc);
+		if ( tc.time!=raw.time || tc.code!=raw.code || tc.reset!=raw.reset ) return -1;
+		p += sizeof(FaultCode);
+	}
+	if ( verbose > 4 ) Serial.printf("Verified.\n");
 	return p;
 }
 

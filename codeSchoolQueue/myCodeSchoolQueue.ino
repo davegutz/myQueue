@@ -70,7 +70,8 @@ void loop()
 		I->newCode(faultNow, 2021UL); if ( verbose > 4 ) Serial.printf("mycodeschool: "); I->Print();
 		//
 		impendNVM = F->storeNVM(faultNVM);
-		I->storeNVM(impendNVM);
+		Serial.printf("impendNVM=%d\n", impendNVM);
+		if ( impendNVM<0 || I->storeNVM(impendNVM)<0 ) Serial.printf("Failed storeNVM\n");
 	}
 
 	if ( resetting )
